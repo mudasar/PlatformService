@@ -33,6 +33,8 @@ spec:
               value: "mssql-depl"
             - name: MSSQL_DATABASE
               value: "master"
+            - name: EULA_ACCEPTED
+              value: "true"
           volumeMounts:
             - name: mssql-data
               mountPath: /var/opt/mssql/data
@@ -66,7 +68,7 @@ spec:
   selector:
     app: mssql
   ports:
-  - port: 5432
-    targetPort: 5432
+  - port: 1433
+    targetPort: 1433
     protocol: TCP
     name: mssql
