@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mssql-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mssql
+  template:
+    metadata:
+      labels:
+        app: mssql
+    spec:
+      containers:
+        - name: mssql
+          image: mcr.microsoft.com/mssql/server:2017-latest
+          ports:
+            - containerPort: 1433
+          env:
+            - name: MSSQL_PID
+              value: "Express"
+            - name: MSSQL_PORT
+              value: "1433"
+            - name: MSSQL_USER
+              value: "sa"
+            - name: SA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret-config
+                  key: password
+            - name: MSSQL_SERVER
+              value: "mssql-depl"
+            - name: MSSQL_DATABASE
+              value: "master"
+          volumeMounts:
+            - name: mssql-data
+              mountPath: /var/opt/mssql/data
+      volumes:
+        - name: mssql-data
+          persistentVolumeClaim:
+            claimName: platforms-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql-clusterip-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: mssql
+  ports:
+  - port: 1433
+    targetPort: 1433
+    protocol: TCP
+    name: mssql
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql-loadbalancer-srv
+spec:
+  type: LoadBalancer
+  selector:
+    app: mssql
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+    name: mssql
