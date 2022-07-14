@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PlatformService.AsyncDataServices.Http;
 using PlatformService.CommandService.SyncDataService.Http;
 using PlatformService.Data;
+using PlatformService.SyncDataService.Grpc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,7 @@ builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(builder.Configu
 builder.Services.AddScoped<IPlatformRepository, PlatformRepository>();
 builder.Services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
 builder.Services.AddSingleton<IMessageBusClient, MessageBusClient>();
+builder.Services.AddGrpc(); 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -48,5 +50,14 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapGrpcService<GrpcPlatformService>();
+    endpoints.MapGet("/protos/platforms.proto", async context =>
+    {
+        await context.Response.WriteAsync(
+            File.ReadAllText("PlatformService/SyncDataServices/Grpc/platforms.proto"));
+    });
+});
 
 app.Run();

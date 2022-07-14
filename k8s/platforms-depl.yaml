@@ -30,3 +30,7 @@ spec:
     targetPort: 80
     protocol: TCP
     name: platformservice
+  - port: 666
+    targetPort: 666
+    protocol: TCP
+    name: platformgrpc

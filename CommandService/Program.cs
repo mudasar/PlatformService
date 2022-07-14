@@ -1,6 +1,7 @@
 using CommandService.AsyncDataServices;
 using CommandService.Data;
 using CommandService.EventProcessing;
+using CommandService.SyncDataService.Grpc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,7 +22,7 @@ builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
 builder.Services.AddControllers();
 
 builder.Services.AddHostedService<MessageBusSubscriber>();
-
+builder.Services.AddScoped<IPlatformDataClient, PlatformDataClient>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -38,7 +39,7 @@ using var scope = app.Services.CreateScope();
 await using var dbContext = scope.ServiceProvider.GetRequiredService<CommandsDbContext>();
 await dbContext.Database.MigrateAsync();
 
-
+ await app.InitializeAsync();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
