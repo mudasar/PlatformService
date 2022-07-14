@@ -30,6 +30,11 @@ public class CommandRepository : ICommandRepository {
         _context.Platforms.Add(platform);
     }
 
+    public bool ExternalPlatformExists(int externalId)
+    {
+        return _context.Platforms.Any(p => p.ExternalID == externalId);
+    }
+
     public Command GetCommand(int id)
     {
         return _context.Commands?.Find(id);
